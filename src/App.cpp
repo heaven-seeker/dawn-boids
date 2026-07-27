@@ -1,3 +1,4 @@
+#include "C2Core/Color.hpp"
 #include "C2Profiler.hpp"
 #include "App.hpp"
 #include "ResourceManager.hpp"
@@ -78,11 +79,7 @@ void App::run() {
         }
         
         update(deltaTime);
-
-        {
-            C2Core::ScopedProfiler p("Renderer::draw", C2Core::TimeUnit::Microseconds);
-            render();
-        }
+        render();
 
         if (uiLayer.consumeFullscreenToggle()) {
             window.toggleFullscreen();

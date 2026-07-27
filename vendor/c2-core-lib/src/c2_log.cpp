@@ -9,13 +9,14 @@
 
 #define C2_ERROR(message) C2Core::Log::ErrorDetailed(message, __FILE__, __LINE__)
 
-const int BUFFER_SIZE = 1024;
 
 
 namespace C2Core::Log {
 
+constexpr size_t BUFFER_SIZE = 1024;
+
 void Info(std::string_view message) {
-    std::cout << C2Core::ConsoleColor::FG_GREEN << "[INFO]" << C2Core::ConsoleColor::RESET << message << "\n";
+    std::cout << C2Core::ConsoleColor::FG_GREEN << "[INFO] " << C2Core::ConsoleColor::RESET << message << "\n";
 }
 
 void Info(const char* format, ...) {
@@ -41,7 +42,7 @@ void Warning(const char* format, ...) {
     vsnprintf(buffer, BUFFER_SIZE, format, argList);
     va_end(argList);
 
-    std::cout << C2Core::ConsoleColor::FG_YELLOW << "[INFO] " << C2Core::ConsoleColor::RESET << buffer << "\n";
+    std::cout << C2Core::ConsoleColor::FG_YELLOW << "[WARN] " << C2Core::ConsoleColor::RESET << buffer << "\n";
 }
 
 
@@ -57,7 +58,7 @@ void Error(const char* format, ...) {
     vsnprintf(buffer, BUFFER_SIZE, format, argList);
     va_end(argList);
 
-    std::cout << C2Core::ConsoleColor::FG_RED << "[ERROR] " << C2Core::ConsoleColor::RESET << buffer << "\n";
+    std::cerr << C2Core::ConsoleColor::FG_RED << "[ERROR] " << C2Core::ConsoleColor::RESET << buffer << "\n";
 }
 
 void ErrorDetailed(std::string_view message, const char* file, int line) {
@@ -65,6 +66,17 @@ void ErrorDetailed(std::string_view message, const char* file, int line) {
               << message 
               << C2Core::ConsoleColor::FG_CYAN << " (" << file << ":" << line << ")" 
               << C2Core::ConsoleColor::RESET << "\n";
+}
+
+void Trace(const char* colorCode, const char* format, ...) {
+    va_list argList;
+    char buffer[BUFFER_SIZE];
+
+    va_start(argList, format);
+    vsnprintf(buffer, BUFFER_SIZE, format, argList);
+    va_end(argList);
+
+    std::cout << colorCode << buffer << "\n";
 }
 
 } // C2Core::Log
