@@ -4,6 +4,7 @@ project(C2Core)
 
 set(CORE_SOURCES
     src/time_core.cpp
+    src/c2_log.cpp
 )
 
 add_library(${PROJECT_NAME} STATIC ${CORE_SOURCES})

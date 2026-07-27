@@ -206,8 +206,6 @@ void Renderer::updateUniforms(WebGPUContext& gpu, const Camera& camera, Interfac
     boidUniforms.modelMatrix = glm::scale(glm::mat4(1.f), glm::vec3(0.1f, 0.1f, 0.1f));
     boidUniforms.viewMatrix = camera.getViewMatrix();
     
-    camera.debug();
-    
     float aspect = static_cast<float>(gpu.getSurfaceConfig().width) / static_cast<float>(gpu.getSurfaceConfig().height);
     boidUniforms.projectionMatrix = camera.getProjectionMatrix(aspect);
     boidUniforms.cameraPosition = camera.getPosition();

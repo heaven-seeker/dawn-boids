@@ -3,6 +3,7 @@
 #include "ResourceManager.hpp"
 #include "imgui.h"
 #include "Debug.hpp"
+#include "C2Core/c2_log.hpp"
 
 
 #include <iostream>
