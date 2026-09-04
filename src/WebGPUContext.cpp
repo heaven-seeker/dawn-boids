@@ -48,13 +48,13 @@ bool WebGPUContext::initAdapter() {
     wgpu::RequestAdapterOptions adapterOpts{};
     adapterOpts.nextInChain = nullptr;
     adapterOpts.compatibleSurface = surface;
-    
+
     bool requestEnded = false;
 
     instance.RequestAdapter(
-        &adapterOpts,
-        wgpu::CallbackMode::AllowProcessEvents,
-        [this, &requestEnded](wgpu::RequestAdapterStatus status, wgpu::Adapter adapter_, const char* message) {
+        &adapterOpts, wgpu::CallbackMode::AllowProcessEvents,
+        [this, &requestEnded](wgpu::RequestAdapterStatus status,
+                              wgpu::Adapter adapter_, const char* message) {
             if (status == wgpu::RequestAdapterStatus::Success) {
                 adapter = adapter_;
             } else {
@@ -63,8 +63,7 @@ bool WebGPUContext::initAdapter() {
                 std::cerr << std::endl;
             }
             requestEnded = true;
-        }
-    );
+        });
 
     while (!requestEnded) {
         instance.ProcessEvents();
@@ -81,20 +80,23 @@ bool WebGPUContext::initDevice() {
     deviceDesc.defaultQueue.nextInChain = nullptr;
     deviceDesc.defaultQueue.label = "The default queue";
 
-    deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const * device, WGPUDeviceLostReason reason, char const* message, void* /* pUserData */) {
+    deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const* device,
+                                                    WGPUDeviceLostReason reason,
+                                                    char const* message,
+                                                    void* /* pUserData */) {
         std::cerr << "Device lost: reason " << reason << " device: " << device;
         if (message) std::cerr << " (" << message << ")";
         std::cerr << std::endl;
     };
     wgpu::RequiredLimits requiredLimits = getRequiredLimits();
     deviceDesc.requiredLimits = &requiredLimits;
-    
+
     bool requestEnded = false;
 
     adapter.RequestDevice(
-        &deviceDesc,
-        wgpu::CallbackMode::AllowProcessEvents,
-        [this, &requestEnded](wgpu::RequestDeviceStatus status, wgpu::Device device_, char const* message) {
+        &deviceDesc, wgpu::CallbackMode::AllowProcessEvents,
+        [this, &requestEnded](wgpu::RequestDeviceStatus status,
+                              wgpu::Device device_, char const* message) {
             if (status == wgpu::RequestDeviceStatus::Success) {
                 device = device_;
             } else {
@@ -103,8 +105,7 @@ bool WebGPUContext::initDevice() {
                 std::cerr << std::endl;
             }
             requestEnded = true;
-        }
-    );
+        });
 
     while (!requestEnded) {
         instance.ProcessEvents();
@@ -112,25 +113,26 @@ bool WebGPUContext::initDevice() {
 
     device.SetUncapturedErrorCallback(
         [](WGPUErrorType type, char const* message, void*) {
-            std::cerr << "Uncaptured device error: type" << static_cast<uint32_t>(type);
+            std::cerr << "Uncaptured device error: type"
+                      << static_cast<uint32_t>(type);
             if (message) std::cerr << " (" << message << ")";
             std::cerr << std::endl;
         },
-        nullptr
-    );
+        nullptr);
 
     return device != nullptr;
 }
 
 bool WebGPUContext::initQueue() {
     queue = device.GetQueue();
-    
-    queue.OnSubmittedWorkDone(
-        wgpu::CallbackMode::AllowProcessEvents,
-        [](wgpu::QueueWorkDoneStatus status) {
-            std::cout << "Queued work finished with status: " << static_cast<uint32_t>(status) << std::endl;
-        }
-    );
+
+    queue.OnSubmittedWorkDone(wgpu::CallbackMode::AllowProcessEvents,
+                              [](wgpu::QueueWorkDoneStatus status) {
+                                  std::cout
+                                      << "Queued work finished with status: "
+                                      << static_cast<uint32_t>(status)
+                                      << std::endl;
+                              });
 
     return queue != nullptr;
 }
@@ -147,14 +149,12 @@ void WebGPUContext::setupSurfaceConfig(int width, int height) {
     surface.GetCapabilities(adapter, &capabilities);
     if (capabilities.formatCount > 0) {
         surfaceConfig.format = capabilities.formats[0];
-    }
-    else {
+    } else {
         surfaceConfig.format = wgpu::TextureFormat::BGRA8Unorm;
     }
     if (capabilities.alphaModeCount > 0) {
         surfaceConfig.alphaMode = capabilities.alphaModes[0];
-    }
-    else {
+    } else {
         surfaceConfig.alphaMode = wgpu::CompositeAlphaMode::Auto;
     }
     surfaceFormat = surfaceConfig.format;
@@ -163,14 +163,13 @@ void WebGPUContext::setupSurfaceConfig(int width, int height) {
     surface.Configure(&surfaceConfig);
 }
 
-
 wgpu::RequiredLimits WebGPUContext::getRequiredLimits() const {
     wgpu::SupportedLimits supportedLimits;
     supportedLimits.nextInChain = nullptr;
     adapter.GetLimits(&supportedLimits);
 
     wgpu::RequiredLimits requiredLimits = {};
-    
+
     requiredLimits.limits = supportedLimits.limits;
 
     return requiredLimits;
@@ -180,7 +179,8 @@ wgpu::TextureView WebGPUContext::getNextSurfaceViewData() {
     wgpu::SurfaceTexture surfaceTexture;
     surface.GetCurrentTexture(&surfaceTexture);
 
-    if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::Success) {
+    if (surfaceTexture.status !=
+        wgpu::SurfaceGetCurrentTextureStatus::Success) {
         return nullptr;
     }
 
@@ -211,7 +211,7 @@ void WebGPUContext::resizeSwapchain(int width, int height) {
     surface.Configure(&surfaceConfig);
 
     wgpu::TextureDescriptor msaaDesc{};
-    msaaDesc.size = { surfaceConfig.width, surfaceConfig.height, 1 };
+    msaaDesc.size = {surfaceConfig.width, surfaceConfig.height, 1};
     msaaDesc.sampleCount = 4;
     msaaDesc.format = surfaceFormat;
     msaaDesc.usage = wgpu::TextureUsage::RenderAttachment;
@@ -226,10 +226,11 @@ void WebGPUContext::resizeSwapchain(int width, int height) {
     depthTextureDescriptor.usage = wgpu::TextureUsage::RenderAttachment;
     depthTextureDescriptor.mipLevelCount = 1;
     depthTextureDescriptor.sampleCount = 4;
-    depthTextureDescriptor.size = {surfaceConfig.width, surfaceConfig.height, 1};
+    depthTextureDescriptor.size = {surfaceConfig.width, surfaceConfig.height,
+                                   1};
 
     depthTexture = device.CreateTexture(&depthTextureDescriptor);
     depthTextureView = depthTexture.CreateView();
 }
 
-}; // namespace WGPUBoids
+};  // namespace WGPUBoids

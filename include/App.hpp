@@ -1,20 +1,19 @@
 #pragma once
 
-#include "WebGPUContext.hpp"
-#include "Renderer.hpp"
-#include "WindowContext.hpp"
+#include <chrono>
+
+#include "C2Core/time_core.hpp"
 #include "Camera.hpp"
 #include "CoreData.hpp"
 #include "Interface.hpp"
-#include "C2Core/time_core.hpp"
-
-#include <chrono>
-
+#include "Renderer.hpp"
+#include "WebGPUContext.hpp"
+#include "WindowContext.hpp"
 
 namespace WGPUBoids {
 
 class App {
-  public:
+   public:
     App() = default;
     ~App();
 
@@ -28,7 +27,7 @@ class App {
 
     void run();
 
-  private:
+   private:
     void update(float deltaTime);
     void render();
     void processInput();
@@ -50,4 +49,4 @@ class App {
     C2Core::Time::Context* timeCtx = nullptr;
 };
 
-}; // namespace WGPUBoids
+};  // namespace WGPUBoids

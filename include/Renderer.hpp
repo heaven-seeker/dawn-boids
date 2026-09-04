@@ -1,11 +1,11 @@
 #pragma once
 
-#include "webgpu/webgpu_cpp.h"
-#include "WebGPUContext.hpp"
-#include "Mesh.hpp"
-#include "CoreData.hpp"
 #include <vector>
 
+#include "CoreData.hpp"
+#include "Mesh.hpp"
+#include "WebGPUContext.hpp"
+#include "webgpu/webgpu_cpp.h"
 
 namespace WGPUBoids {
 
@@ -13,21 +13,29 @@ class Camera;
 class Interface;
 
 class Renderer {
-  public:
+   public:
     Renderer() = default;
 
-    bool init(wgpu::Device device, wgpu::Queue queue, wgpu::ShaderModule renderShader, wgpu::ShaderModule computeShader, wgpu::TextureFormat surfaceFormat, 
-      wgpu::TextureFormat depthFormat, const std::vector<BoidData>& boids, const SimulationParams& params);
+    bool init(wgpu::Device device, wgpu::Queue queue,
+              wgpu::ShaderModule renderShader, wgpu::ShaderModule computeShader,
+              wgpu::TextureFormat surfaceFormat,
+              wgpu::TextureFormat depthFormat,
+              const std::vector<BoidData>& boids,
+              const SimulationParams& params);
 
-
-    void updateMeshBuffers(const Mesh &model);
+    void updateMeshBuffers(const Mesh& model);
     void initBoidsData(const std::vector<BoidData>& boids);
-    void draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer);
-  private:
+    void draw(WebGPUContext& gpu, const Camera& camera, Interface& uiLayer);
+
+   private:
     void initBuffers(const SimulationParams& params);
     void initBindGroups(size_t boidsCount);
-    void initRenderPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
-    void initLinePipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
+    void initRenderPipeline(wgpu::ShaderModule shader,
+                            wgpu::TextureFormat surfaceFormat,
+                            wgpu::TextureFormat depthFormat);
+    void initLinePipeline(wgpu::ShaderModule shader,
+                          wgpu::TextureFormat surfaceFormat,
+                          wgpu::TextureFormat depthFormat);
 
     void initCompute(wgpu::ShaderModule computeShader, size_t boidsCount);
 
@@ -36,14 +44,14 @@ class Renderer {
     std::vector<wgpu::BindGroup> boidBindGroups;
     std::vector<wgpu::BindGroup> cubeBindGroups;
 
-    void setDefault(wgpu::BindGroupLayoutEntry &bindingLayout);
+    void setDefault(wgpu::BindGroupLayoutEntry& bindingLayout);
 
     wgpu::Device device;
     wgpu::Queue queue;
 
     uint32_t currentBoidsCount = 0;
 
-   /* All pipelines*/
+    /* All pipelines*/
     wgpu::RenderPipeline renderPipeline;
     wgpu::RenderPipeline linePipeline;
 
@@ -56,7 +64,6 @@ class Renderer {
     wgpu::Buffer indexBuffer;
     uint32_t indexBufferSize = 1024;
     uint32_t indexCount = 0;
-
 
     // Second Pipeline
     wgpu::Buffer cubeVertexBuffer;
@@ -82,19 +89,24 @@ class Renderer {
     wgpu::RenderPipeline debugVelocityPipeline;
     wgpu::RenderPipeline debugCoMPipeline;
 
-    void initDebugVelocityPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
-    void initDebugCoMPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
-    
-    void updateUniforms(WebGPUContext& gpu, const Camera& camera, Interface& uiLayer);
-    void runComputePass(wgpu::CommandEncoder& encoder, const SimulationParams& params);
-    void runRenderPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, WebGPUContext& gpu, const SimulationParams& params, Interface& uiLayer);
-    void runUIPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, Interface& uiLayer);
+    void initDebugVelocityPipeline(wgpu::ShaderModule shader,
+                                   wgpu::TextureFormat surfaceFormat,
+                                   wgpu::TextureFormat depthFormat);
+    void initDebugCoMPipeline(wgpu::ShaderModule shader,
+                              wgpu::TextureFormat surfaceFormat,
+                              wgpu::TextureFormat depthFormat);
+
+    void updateUniforms(WebGPUContext& gpu, const Camera& camera,
+                        Interface& uiLayer);
+    void runComputePass(wgpu::CommandEncoder& encoder,
+                        const SimulationParams& params);
+    void runRenderPass(wgpu::CommandEncoder& encoder,
+                       wgpu::TextureView targetView, WebGPUContext& gpu,
+                       const SimulationParams& params, Interface& uiLayer);
+    void runUIPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView,
+                   Interface& uiLayer);
 
     int frameCount = 0;
 };
 
-
-
-
-
-}; // namespace WGPUBoids
+};  // namespace WGPUBoids

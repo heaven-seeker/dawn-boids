@@ -1,23 +1,28 @@
 #include "Camera.hpp"
-#include "glm/ext.hpp"
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
+#include "glm/ext.hpp"
 
 namespace WGPUBoids {
 
 Camera::Camera()
-    : position(0.0f, 0.0f, 10.0f), worldUp(0.0f, 1.0f, 0.0f), yaw(-90.0f),
+    : position(0.0f, 0.0f, 10.0f),
+      worldUp(0.0f, 1.0f, 0.0f),
+      yaw(-90.0f),
 
-      pitch(0.0f), movementSpeed(2.5f), mouseSensitivity(0.1f), fov(45.0f) {
+      pitch(0.0f),
+      movementSpeed(2.5f),
+      mouseSensitivity(0.1f),
+      fov(45.0f) {
     update();
 }
 
 void Camera::update() {
     glm::vec3 newFront;
 
-    float horizontalDistance = cos(glm::radians(pitch)); 
+    float horizontalDistance = cos(glm::radians(pitch));
     newFront.x = horizontalDistance * cos(glm::radians(yaw));
     newFront.y = sin(glm::radians(pitch));
     newFront.z = horizontalDistance * sin(glm::radians(yaw));
@@ -27,7 +32,7 @@ void Camera::update() {
     up = glm::normalize(glm::cross(right, front));
 
     if (mode == CameraMode::Orbital) {
-        position = target - front * radius; 
+        position = target - front * radius;
     }
 }
 
@@ -78,17 +83,15 @@ void Camera::moveDown(float deltaTime) {
     position -= up * movementSpeed * deltaTime;
 }
 
-void Camera::updateCameraSpeed(float delta) {
-    movementSpeed += delta;
-}
+void Camera::updateCameraSpeed(float delta) { movementSpeed += delta; }
 
 void Camera::setMode(CameraMode newMode) {
     if (mode == newMode) return;
-    
+
     if (newMode == CameraMode::Orbital) {
         radius = glm::distance(position, target);
     }
-    
+
     mode = newMode;
     update();
 }
@@ -111,5 +114,4 @@ void Camera::debug() const {
               << std::flush;
 }
 
-};
-
+};  // namespace WGPUBoids

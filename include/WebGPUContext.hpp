@@ -1,16 +1,16 @@
 #pragma once
 
-#include "webgpu/webgpu_cpp.h"
 #include "glfw3webgpu.h"
-
+#include "webgpu/webgpu_cpp.h"
 
 namespace WGPUBoids {
 
 class WebGPUContext {
-  public:
+   public:
     bool init(GLFWwindow* window, int width, int height);
     void resizeSwapchain(int width, int height);
-  private:
+
+   private:
     bool initInstance();
     bool initAdapter();
     bool initDevice();
@@ -36,19 +36,22 @@ class WebGPUContext {
     wgpu::TextureDescriptor depthTextureDescriptor;
     wgpu::TextureViewDescriptor depthTextureViewDescriptor;
     wgpu::TextureFormat depthTextureFormat;
-   
-  public:
-   const wgpu::Device& getDevice() const { return device; }
-   const wgpu::Queue& getQueue() const { return queue; }
-   wgpu::TextureFormat getSurfaceFormat() const { return surfaceFormat; }
-   wgpu::SurfaceConfiguration getSurfaceConfig() const { return surfaceConfig; }
-   wgpu::TextureView getMsaaTextureView() const { return msaaTextureView; }
-   wgpu::TextureView getDepthTextureView() const { return depthTextureView; }
-   wgpu::TextureView getNextSurfaceViewData();
-   wgpu::TextureFormat getDepthTextureFormat() const { return depthTextureFormat; }
 
-   void present() const { surface.Present(); }
+   public:
+    const wgpu::Device& getDevice() const { return device; }
+    const wgpu::Queue& getQueue() const { return queue; }
+    wgpu::TextureFormat getSurfaceFormat() const { return surfaceFormat; }
+    wgpu::SurfaceConfiguration getSurfaceConfig() const {
+        return surfaceConfig;
+    }
+    wgpu::TextureView getMsaaTextureView() const { return msaaTextureView; }
+    wgpu::TextureView getDepthTextureView() const { return depthTextureView; }
+    wgpu::TextureView getNextSurfaceViewData();
+    wgpu::TextureFormat getDepthTextureFormat() const {
+        return depthTextureFormat;
+    }
 
+    void present() const { surface.Present(); }
 };
 
-}; // namespace WGPUBoids
+};  // namespace WGPUBoids

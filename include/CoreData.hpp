@@ -1,6 +1,5 @@
 #pragma once
 
-
 struct Uniforms {
     glm::mat4 modelMatrix;
     glm::mat4 viewMatrix;
@@ -18,7 +17,8 @@ struct BoidData {
     glm::vec4 velocity;
     glm::vec4 centerOfMass = {0.f, 0.f, 0.f, 0.f};
 
-    BoidData(glm::vec4 a, glm::vec4 b, glm::vec4 c) : position(a), velocity(b), centerOfMass(c) {}
+    BoidData(glm::vec4 a, glm::vec4 b, glm::vec4 c)
+        : position(a), velocity(b), centerOfMass(c) {}
 };
 
 struct SimulationParams {

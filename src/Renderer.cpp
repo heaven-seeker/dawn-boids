@@ -1,14 +1,19 @@
 #include "Renderer.hpp"
-#include "CoreData.hpp"
-#include "Camera.hpp"
-#include "Interface.hpp"
 
+#include "Camera.hpp"
+#include "CoreData.hpp"
+#include "Interface.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 namespace WGPUBoids {
 
-bool Renderer::init(wgpu::Device dev, wgpu::Queue q, wgpu::ShaderModule renderShader, 
-    wgpu::ShaderModule computeShader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat, const std::vector<BoidData>& boids, const SimulationParams& params) {
+bool Renderer::init(wgpu::Device dev, wgpu::Queue q,
+                    wgpu::ShaderModule renderShader,
+                    wgpu::ShaderModule computeShader,
+                    wgpu::TextureFormat surfaceFormat,
+                    wgpu::TextureFormat depthFormat,
+                    const std::vector<BoidData>& boids,
+                    const SimulationParams& params) {
     device = dev;
     queue = q;
 
@@ -24,7 +29,7 @@ bool Renderer::init(wgpu::Device dev, wgpu::Queue q, wgpu::ShaderModule renderSh
     return renderPipeline != nullptr;
 }
 
-void Renderer::updateMeshBuffers(const Mesh &model) {
+void Renderer::updateMeshBuffers(const Mesh& model) {
     if (!device) return;
 
     if (!vertexBuffer || model.getVertexData().size() >= vertexBufferSize) {
@@ -39,7 +44,8 @@ void Renderer::updateMeshBuffers(const Mesh &model) {
         bufferDesc.nextInChain = nullptr;
         bufferDesc.size = vertexBufferSize * sizeof(VertexAttributes);
         bufferDesc.label = "Vertex buffer";
-        bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex;
+        bufferDesc.usage =
+            wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex;
         bufferDesc.mappedAtCreation = false;
         vertexBuffer = device.CreateBuffer(&bufferDesc);
     }
@@ -56,27 +62,31 @@ void Renderer::updateMeshBuffers(const Mesh &model) {
         indexBufferDesc.nextInChain = nullptr;
         indexBufferDesc.size = indexBufferSize * sizeof(uint32_t);
         indexBufferDesc.label = "Index buffer";
-        indexBufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index;
+        indexBufferDesc.usage =
+            wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index;
         indexBufferDesc.mappedAtCreation = false;
         indexBuffer = device.CreateBuffer(&indexBufferDesc);
     }
 
-    queue.WriteBuffer(vertexBuffer, 0, model.getVertexData().data(), model.getVertexData().size() * sizeof(VertexAttributes));
+    queue.WriteBuffer(vertexBuffer, 0, model.getVertexData().data(),
+                      model.getVertexData().size() * sizeof(VertexAttributes));
 
-    queue.WriteBuffer(indexBuffer, 0, model.getIndexData().data(), model.getIndexData().size() * sizeof(uint32_t));
+    queue.WriteBuffer(indexBuffer, 0, model.getIndexData().data(),
+                      model.getIndexData().size() * sizeof(uint32_t));
     indexCount = static_cast<uint32_t>(model.getIndexData().size());
 }
 
 void Renderer::initBoidsData(const std::vector<BoidData>& boids) {
     if (!device) return;
-    
+
     currentBoidsCount = static_cast<uint32_t>(boids.size());
     size_t bufferSize = currentBoidsCount * sizeof(BoidData);
 
     wgpu::BufferDescriptor boidDataBufferDesc = {};
     boidDataBufferDesc.nextInChain = nullptr;
     boidDataBufferDesc.size = bufferSize;
-    boidDataBufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
+    boidDataBufferDesc.usage =
+        wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
     boidDataBufferDesc.mappedAtCreation = false;
 
     boidDataBufferDesc.label = "Boids buffer A";
@@ -88,7 +98,8 @@ void Renderer::initBoidsData(const std::vector<BoidData>& boids) {
     queue.WriteBuffer(boidsBufferA, 0, boids.data(), bufferSize);
 }
 
-void Renderer::initCompute(wgpu::ShaderModule computeShader, size_t boidsCount) {
+void Renderer::initCompute(wgpu::ShaderModule computeShader,
+                           size_t boidsCount) {
     std::vector<wgpu::BindGroupLayoutEntry> bglEntries(3);
 
     bglEntries[0].binding = 0;
@@ -116,7 +127,7 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader, size_t boidsCount) 
     computePipelineLayout = device.CreatePipelineLayout(&plDesc);
 
     std::vector<wgpu::BindGroupEntry> bindingsA(3);
-    
+
     bindingsA[0].binding = 0;
     bindingsA[0].buffer = simulationParamsBuffer;
     bindingsA[0].offset = 0;
@@ -139,9 +150,8 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader, size_t boidsCount) 
     bgDescA.nextInChain = nullptr;
     computeBindGroupA = device.CreateBindGroup(&bgDescA);
 
-
     std::vector<wgpu::BindGroupEntry> bindingsB(3);
-    
+
     bindingsB[0].binding = 0;
     bindingsB[0].buffer = simulationParamsBuffer;
     bindingsB[0].offset = 0;
@@ -157,14 +167,12 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader, size_t boidsCount) 
     bindingsB[2].offset = 0;
     bindingsB[2].size = sizeof(BoidData) * boidsCount;
 
-
     wgpu::BindGroupDescriptor bgDescB = {};
     bgDescB.entries = bindingsB.data();
     bgDescB.entryCount = static_cast<uint32_t>(bindingsB.size());
     bgDescB.layout = bglCompute;
     bgDescB.nextInChain = nullptr;
     computeBindGroupB = device.CreateBindGroup(&bgDescB);
-
 
     wgpu::ComputePipelineDescriptor computeDesc = {};
     computeDesc.compute.module = computeShader;
@@ -173,7 +181,8 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader, size_t boidsCount) 
     computePipeline = device.CreateComputePipeline(&computeDesc);
 }
 
-void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer) {
+void Renderer::draw(WebGPUContext& gpu, const Camera& camera,
+                    Interface& uiLayer) {
     device.Tick();
 
     updateUniforms(gpu, camera, uiLayer);
@@ -197,37 +206,44 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     frameCount++;
 }
 
-void Renderer::updateUniforms(WebGPUContext& gpu, const Camera& camera, Interface& uiLayer) {
+void Renderer::updateUniforms(WebGPUContext& gpu, const Camera& camera,
+                              Interface& uiLayer) {
     auto params = uiLayer.getParams();
     params.visionRadius = glm::cos(glm::radians(params.visionRadius));
 
     Uniforms boidUniforms, cubeUniforms;
     boidUniforms.time = glfwGetTime();
-    boidUniforms.modelMatrix = glm::scale(glm::mat4(1.f), glm::vec3(0.1f, 0.1f, 0.1f));
+    boidUniforms.modelMatrix =
+        glm::scale(glm::mat4(1.f), glm::vec3(0.1f, 0.1f, 0.1f));
     boidUniforms.viewMatrix = camera.getViewMatrix();
-    
-    float aspect = static_cast<float>(gpu.getSurfaceConfig().width) / static_cast<float>(gpu.getSurfaceConfig().height);
+
+    float aspect = static_cast<float>(gpu.getSurfaceConfig().width) /
+                   static_cast<float>(gpu.getSurfaceConfig().height);
     boidUniforms.projectionMatrix = camera.getProjectionMatrix(aspect);
     boidUniforms.cameraPosition = camera.getPosition();
-    boidUniforms.color = { 0.2f, 0.1f, 0.3f, 1.f };
+    boidUniforms.color = {0.2f, 0.1f, 0.3f, 1.f};
     boidUniforms.divideFlocks = params.divideFlocks;
 
     cubeUniforms.time = glfwGetTime();
-    cubeUniforms.modelMatrix = glm::scale(glm::mat4(1.f), glm::vec3(params.cubeSize));
+    cubeUniforms.modelMatrix =
+        glm::scale(glm::mat4(1.f), glm::vec3(params.cubeSize));
     cubeUniforms.viewMatrix = camera.getViewMatrix();
     cubeUniforms.projectionMatrix = boidUniforms.projectionMatrix;
     cubeUniforms.cameraPosition = camera.getPosition();
-    cubeUniforms.color = { 0.2f, 0.1f, 0.3f, 1.f };
+    cubeUniforms.color = {0.2f, 0.1f, 0.3f, 1.f};
 
     queue.WriteBuffer(boidUniformBuffer, 0, &boidUniforms, sizeof(Uniforms));
     queue.WriteBuffer(cubeUniformBuffer, 0, &cubeUniforms, sizeof(Uniforms));
-    queue.WriteBuffer(simulationParamsBuffer, 0, &params, sizeof(SimulationParams));
+    queue.WriteBuffer(simulationParamsBuffer, 0, &params,
+                      sizeof(SimulationParams));
 }
 
-void Renderer::runComputePass(wgpu::CommandEncoder& encoder, const SimulationParams& params) {
+void Renderer::runComputePass(wgpu::CommandEncoder& encoder,
+                              const SimulationParams& params) {
     wgpu::ComputePassDescriptor computePassDescriptor = {};
-    wgpu::ComputePassEncoder computePass = encoder.BeginComputePass(&computePassDescriptor);
-    
+    wgpu::ComputePassEncoder computePass =
+        encoder.BeginComputePass(&computePassDescriptor);
+
     computePass.SetPipeline(computePipeline);
 
     if (frameCount % 2 == 0) {
@@ -241,7 +257,10 @@ void Renderer::runComputePass(wgpu::CommandEncoder& encoder, const SimulationPar
     computePass.End();
 }
 
-void Renderer::runRenderPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, WebGPUContext& gpu, const SimulationParams& params, Interface& uiLayer) {
+void Renderer::runRenderPass(wgpu::CommandEncoder& encoder,
+                             wgpu::TextureView targetView, WebGPUContext& gpu,
+                             const SimulationParams& params,
+                             Interface& uiLayer) {
     wgpu::RenderPassColorAttachment colorAttachment = {};
     colorAttachment.view = gpu.getMsaaTextureView();
     colorAttachment.resolveTarget = targetView;
@@ -262,13 +281,14 @@ void Renderer::runRenderPass(wgpu::CommandEncoder& encoder, wgpu::TextureView ta
     passDesc.depthStencilAttachment = &depthAttachment;
 
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDesc);
-    
+
     // Boids
     pass.SetPipeline(renderPipeline);
     pass.SetVertexBuffer(0, vertexBuffer);
-    pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 0, indexCount * sizeof(uint32_t));
+    pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 0,
+                        indexCount * sizeof(uint32_t));
     if (frameCount % 2 == 0) {
-        pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr); 
+        pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
     } else {
         pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
     }
@@ -277,28 +297,34 @@ void Renderer::runRenderPass(wgpu::CommandEncoder& encoder, wgpu::TextureView ta
     // Cube
     pass.SetPipeline(linePipeline);
     pass.SetVertexBuffer(0, cubeVertexBuffer);
-    pass.SetIndexBuffer(cubeIndexBuffer, wgpu::IndexFormat::Uint32, 0, cubeIndexCount * sizeof(uint32_t));
+    pass.SetIndexBuffer(cubeIndexBuffer, wgpu::IndexFormat::Uint32, 0,
+                        cubeIndexCount * sizeof(uint32_t));
     pass.SetBindGroup(0, cubeBindGroups[0], 0, nullptr);
     pass.DrawIndexed(cubeIndexCount, 1, 0, 0, 0);
-    
+
     // Debug vectors
     if (uiLayer.getShowVelocity()) {
         pass.SetPipeline(debugVelocityPipeline);
-        if (frameCount % 2 == 0) pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
-        else pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
+        if (frameCount % 2 == 0)
+            pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
+        else
+            pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
         pass.Draw(2, params.activeBoidsCount, 0, 0);
     }
     if (uiLayer.getShowCoM()) {
         pass.SetPipeline(debugCoMPipeline);
-        if (frameCount % 2 == 0) pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
-        else pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
-        pass.Draw(2, params.activeBoidsCount, 0, 0); 
+        if (frameCount % 2 == 0)
+            pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
+        else
+            pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
+        pass.Draw(2, params.activeBoidsCount, 0, 0);
     }
 
     pass.End();
 }
 
-void Renderer::runUIPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, Interface& uiLayer) {
+void Renderer::runUIPass(wgpu::CommandEncoder& encoder,
+                         wgpu::TextureView targetView, Interface& uiLayer) {
     wgpu::RenderPassColorAttachment uiAttachment = {};
     uiAttachment.view = targetView;
     uiAttachment.resolveTarget = nullptr;
@@ -327,27 +353,24 @@ void Renderer::initBuffers(const SimulationParams& params) {
 
     bufferDesc.label = "Cube uniforms buffer";
     cubeUniformBuffer = device.CreateBuffer(&bufferDesc);
-    
+
     // Cube buffer
     std::vector<VertexAttributes> cubeVertex(8);
     cubeVertex[0].position = {-1.0f, -1.0f, -1.0f};
-    cubeVertex[1].position = { 1.0f, -1.0f, -1.0f};
-    cubeVertex[2].position = { 1.0f, -1.0f,  1.0f};
-    cubeVertex[3].position = {-1.0f, -1.0f,  1.0f};
-    cubeVertex[4].position = {-1.0f,  1.0f, -1.0f};
-    cubeVertex[5].position = { 1.0f,  1.0f, -1.0f};
-    cubeVertex[6].position = { 1.0f,  1.0f,  1.0f};
-    cubeVertex[7].position = {-1.0f,  1.0f,  1.0f};
+    cubeVertex[1].position = {1.0f, -1.0f, -1.0f};
+    cubeVertex[2].position = {1.0f, -1.0f, 1.0f};
+    cubeVertex[3].position = {-1.0f, -1.0f, 1.0f};
+    cubeVertex[4].position = {-1.0f, 1.0f, -1.0f};
+    cubeVertex[5].position = {1.0f, 1.0f, -1.0f};
+    cubeVertex[6].position = {1.0f, 1.0f, 1.0f};
+    cubeVertex[7].position = {-1.0f, 1.0f, 1.0f};
     for (int i = 0; i < 8; ++i) {
         cubeVertex[i].color = {1.0f, 1.0f, 1.0f};
         cubeVertex[i].normal = {0.0f, 0.0f, 0.0f};
         cubeVertex[i].uv = {0.0f, 0.0f};
     }
-    std::vector<uint32_t> cubeIndices = {
-        0, 1,  1, 2,  2, 3,  3, 0,
-        4, 5,  5, 6,  6, 7,  7, 4,
-        0, 4,  1, 5,  2, 6,  3, 7
-    };
+    std::vector<uint32_t> cubeIndices = {0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
+                                         6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7};
     cubeIndexCount = static_cast<uint32_t>(cubeIndices.size());
 
     bufferDesc.label = "Cube Vertex buffer";
@@ -366,40 +389,47 @@ void Renderer::initBuffers(const SimulationParams& params) {
     simParamsBufferDesc.mappedAtCreation = false;
     simParamsBufferDesc.nextInChain = nullptr;
     simParamsBufferDesc.size = sizeof(SimulationParams);
-    simParamsBufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
+    simParamsBufferDesc.usage =
+        wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
     simulationParamsBuffer = device.CreateBuffer(&simParamsBufferDesc);
 
-    queue.WriteBuffer(cubeVertexBuffer, 0, cubeVertex.data(), cubeVertex.size() * sizeof(VertexAttributes));
-    queue.WriteBuffer(cubeIndexBuffer, 0, cubeIndices.data(), cubeIndices.size() * sizeof(uint32_t));
+    queue.WriteBuffer(cubeVertexBuffer, 0, cubeVertex.data(),
+                      cubeVertex.size() * sizeof(VertexAttributes));
+    queue.WriteBuffer(cubeIndexBuffer, 0, cubeIndices.data(),
+                      cubeIndices.size() * sizeof(uint32_t));
 }
 
 void Renderer::initBindGroups(size_t boidsCount) {
     std::vector<wgpu::BindGroupLayoutEntry> bindingLayoutEntries(2);
-    
+
     // Uniforms
     wgpu::BindGroupLayoutEntry& bindingLayoutEntry = bindingLayoutEntries[0];
     bindingLayoutEntry.binding = 0;
     bindingLayoutEntry.buffer.type = wgpu::BufferBindingType::Uniform;
     bindingLayoutEntry.nextInChain = nullptr;
-    bindingLayoutEntry.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+    bindingLayoutEntry.visibility =
+        wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
     bindingLayoutEntry.buffer.minBindingSize = sizeof(Uniforms);
     bindingLayoutEntry.buffer.hasDynamicOffset = false;
 
     // Boids
-    wgpu::BindGroupLayoutEntry& BoidsBindingLayoutEntry = bindingLayoutEntries[1];
+    wgpu::BindGroupLayoutEntry& BoidsBindingLayoutEntry =
+        bindingLayoutEntries[1];
     BoidsBindingLayoutEntry.binding = 1;
-    BoidsBindingLayoutEntry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+    BoidsBindingLayoutEntry.buffer.type =
+        wgpu::BufferBindingType::ReadOnlyStorage;
     BoidsBindingLayoutEntry.visibility = wgpu::ShaderStage::Vertex;
     BoidsBindingLayoutEntry.buffer.minBindingSize = sizeof(BoidData);
     BoidsBindingLayoutEntry.buffer.hasDynamicOffset = false;
     BoidsBindingLayoutEntry.nextInChain = nullptr;
 
-
     wgpu::BindGroupLayoutDescriptor bindGroupLayoutDescriptor = {};
     bindGroupLayoutDescriptor.nextInChain = nullptr;
-    bindGroupLayoutDescriptor.entryCount = static_cast<uint32_t>(bindingLayoutEntries.size());
+    bindGroupLayoutDescriptor.entryCount =
+        static_cast<uint32_t>(bindingLayoutEntries.size());
     bindGroupLayoutDescriptor.entries = bindingLayoutEntries.data();
-    bindGroupLayouts.push_back(device.CreateBindGroupLayout(&bindGroupLayoutDescriptor));
+    bindGroupLayouts.push_back(
+        device.CreateBindGroupLayout(&bindGroupLayoutDescriptor));
 
     wgpu::PipelineLayoutDescriptor pipeLayoutDescriptor = {};
     pipeLayoutDescriptor.nextInChain = nullptr;
@@ -459,20 +489,23 @@ void Renderer::initBindGroups(size_t boidsCount) {
     cubeBoidsT.offset = 0;
     cubeBoidsT.size = boidsCount * sizeof(BoidData);
 
-
     wgpu::BindGroupDescriptor cubeBindGroupDescriptor = {};
     cubeBindGroupDescriptor.nextInChain = nullptr;
     cubeBindGroupDescriptor.layout = bindGroupLayouts[0];
-    cubeBindGroupDescriptor.entryCount = static_cast<uint32_t>(cubeBindings.size());
+    cubeBindGroupDescriptor.entryCount =
+        static_cast<uint32_t>(cubeBindings.size());
     cubeBindGroupDescriptor.entries = cubeBindings.data();
     cubeBindGroups.push_back(device.CreateBindGroup(&cubeBindGroupDescriptor));
 }
 
-void Renderer::initRenderPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat) {
+void Renderer::initRenderPipeline(wgpu::ShaderModule shader,
+                                  wgpu::TextureFormat surfaceFormat,
+                                  wgpu::TextureFormat depthFormat) {
     wgpu::PipelineLayoutDescriptor layoutDesc{};
     layoutDesc.bindGroupLayoutCount = 1;
     layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
-    wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&layoutDesc);
+    wgpu::PipelineLayout pipelineLayout =
+        device.CreatePipelineLayout(&layoutDesc);
 
     wgpu::RenderPipelineDescriptor pipelineDesc{};
     pipelineDesc.layout = pipelineLayout;
@@ -495,7 +528,8 @@ void Renderer::initRenderPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat
 
     wgpu::VertexBufferLayout vertexBufferLayout{};
     vertexBufferLayout.arrayStride = sizeof(VertexAttributes);
-    vertexBufferLayout.attributeCount = static_cast<uint32_t>(vertexAttributes.size());
+    vertexBufferLayout.attributeCount =
+        static_cast<uint32_t>(vertexAttributes.size());
     vertexBufferLayout.attributes = vertexAttributes.data();
     vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
@@ -539,11 +573,14 @@ void Renderer::initRenderPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat
     renderPipeline = device.CreateRenderPipeline(&pipelineDesc);
 }
 
-void Renderer::initLinePipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat) {
+void Renderer::initLinePipeline(wgpu::ShaderModule shader,
+                                wgpu::TextureFormat surfaceFormat,
+                                wgpu::TextureFormat depthFormat) {
     wgpu::PipelineLayoutDescriptor layoutDesc{};
     layoutDesc.bindGroupLayoutCount = 1;
     layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
-    wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&layoutDesc);
+    wgpu::PipelineLayout pipelineLayout =
+        device.CreatePipelineLayout(&layoutDesc);
 
     wgpu::RenderPipelineDescriptor pipelineDesc{};
     pipelineDesc.layout = pipelineLayout;
@@ -566,7 +603,8 @@ void Renderer::initLinePipeline(wgpu::ShaderModule shader, wgpu::TextureFormat s
 
     wgpu::VertexBufferLayout vertexBufferLayout{};
     vertexBufferLayout.arrayStride = sizeof(VertexAttributes);
-    vertexBufferLayout.attributeCount = static_cast<uint32_t>(vertexAttributes.size());
+    vertexBufferLayout.attributeCount =
+        static_cast<uint32_t>(vertexAttributes.size());
     vertexBufferLayout.attributes = vertexAttributes.data();
     vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
@@ -610,7 +648,7 @@ void Renderer::initLinePipeline(wgpu::ShaderModule shader, wgpu::TextureFormat s
     linePipeline = device.CreateRenderPipeline(&pipelineDesc);
 }
 
-void Renderer::setDefault(wgpu::BindGroupLayoutEntry &bindingLayout) {
+void Renderer::setDefault(wgpu::BindGroupLayoutEntry& bindingLayout) {
     bindingLayout.buffer.nextInChain = nullptr;
     bindingLayout.buffer.type = wgpu::BufferBindingType::Undefined;
     bindingLayout.buffer.hasDynamicOffset = false;
@@ -630,16 +668,19 @@ void Renderer::setDefault(wgpu::BindGroupLayoutEntry &bindingLayout) {
     bindingLayout.texture.viewDimension = wgpu::TextureViewDimension::Undefined;
 }
 
-void Renderer::initDebugVelocityPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat) {
+void Renderer::initDebugVelocityPipeline(wgpu::ShaderModule shader,
+                                         wgpu::TextureFormat surfaceFormat,
+                                         wgpu::TextureFormat depthFormat) {
     wgpu::PipelineLayoutDescriptor layoutDesc{};
     layoutDesc.bindGroupLayoutCount = 1;
     layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
-    wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&layoutDesc);
+    wgpu::PipelineLayout pipelineLayout =
+        device.CreatePipelineLayout(&layoutDesc);
 
     wgpu::RenderPipelineDescriptor pipelineDesc{};
     pipelineDesc.layout = pipelineLayout;
 
-    pipelineDesc.vertex.bufferCount = 0; 
+    pipelineDesc.vertex.bufferCount = 0;
     pipelineDesc.vertex.buffers = nullptr;
     pipelineDesc.vertex.module = shader;
     pipelineDesc.vertex.entryPoint = "vs_debug_velocity";
@@ -679,16 +720,19 @@ void Renderer::initDebugVelocityPipeline(wgpu::ShaderModule shader, wgpu::Textur
     debugVelocityPipeline = device.CreateRenderPipeline(&pipelineDesc);
 }
 
-void Renderer::initDebugCoMPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat) {
+void Renderer::initDebugCoMPipeline(wgpu::ShaderModule shader,
+                                    wgpu::TextureFormat surfaceFormat,
+                                    wgpu::TextureFormat depthFormat) {
     wgpu::PipelineLayoutDescriptor layoutDesc{};
     layoutDesc.bindGroupLayoutCount = 1;
     layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
-    wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&layoutDesc);
+    wgpu::PipelineLayout pipelineLayout =
+        device.CreatePipelineLayout(&layoutDesc);
 
     wgpu::RenderPipelineDescriptor pipelineDesc{};
     pipelineDesc.layout = pipelineLayout;
 
-    pipelineDesc.vertex.bufferCount = 0; 
+    pipelineDesc.vertex.bufferCount = 0;
     pipelineDesc.vertex.buffers = nullptr;
     pipelineDesc.vertex.module = shader;
     pipelineDesc.vertex.entryPoint = "vs_debug_com";
@@ -728,4 +772,4 @@ void Renderer::initDebugCoMPipeline(wgpu::ShaderModule shader, wgpu::TextureForm
     debugCoMPipeline = device.CreateRenderPipeline(&pipelineDesc);
 }
 
-}; // namespace WGPUBoids
+};  // namespace WGPUBoids

@@ -2,16 +2,12 @@
 
 #include "glm/glm.hpp"
 
-
 namespace WGPUBoids {
 
-enum class CameraMode {
-    Free,
-    Orbital
-};
+enum class CameraMode { Free, Orbital };
 
 class Camera {
-  public:
+   public:
     Camera();
 
     void update();
@@ -32,9 +28,7 @@ class Camera {
 
     void debug() const;
 
-
-
-  private:
+   private:
     glm::vec3 position;
 
     glm::vec3 front;
@@ -54,22 +48,22 @@ class Camera {
     float radius = 10.0f;
     float zoomFactor = 0.5f;
 
-  public:
+   public:
     glm::vec3 getPosition() const { return position; }
 
     void setMode(CameraMode newMode);
     CameraMode getMode() const { return mode; }
-    
+
     void setTarget(const glm::vec3& newTarget) { target = newTarget; }
 
     float getMovementSpeed() const { return movementSpeed; }
     void setMovementSpeed(float speed) { movementSpeed = speed; }
 
     float getRadius() const { return radius; }
-    void setRadius(float r) { 
-        radius = r; 
+    void setRadius(float r) {
+        radius = r;
         update();
     }
 };
 
-}; // namespace WGPUBoids
+};  // namespace WGPUBoids

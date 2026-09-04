@@ -133,5 +133,5 @@ set_target_properties(${APP_NAME} PROPERTIES
     COMPILE_WARNING_AS_ERROR ON
 )
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/utils.cmake)
+# include(${CMAKE_CURRENT_SOURCE_DIR}/utils.cmake)
 target_copy_webgpu_binaries(${APP_NAME})
