@@ -179,9 +179,12 @@ void Interface::buildUI() {
         };
 
         if (ImGui::CollapsingHeader("System & Performance")) {
+            ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f),
+                               "Windowed mode is currently unstable.");
             if (ImGui::Button(isFullscreen ? "Windowed Mode" : "Fullscreen",
                               ImVec2(-1, 0))) {
                 requestFullscreenToggle = true;
+                isFullscreen = !isFullscreen;
             }
 
             if (targetFPS == 0) {

@@ -32,7 +32,7 @@ class Interface {
     bool divideFlocks = false;
 
     bool requestFullscreenToggle = false;
-    bool isFullscreen = false;
+    bool isFullscreen = true;
 
     GLFWwindow* glfwWindow = nullptr;
     Camera* camera = nullptr;

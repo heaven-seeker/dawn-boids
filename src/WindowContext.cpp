@@ -7,10 +7,17 @@
 namespace WGPUBoids {
 
 bool WindowContext::init(int width, int height, const char* title) {
-    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+    window = glfwCreateWindow(width, height, title, primaryMonitor, nullptr);
     this->height = height;
     this->width = width;
     this->name = title;
+
+    this->isFullscreen = true;
+    this->savedWidth = 1280;
+    this->savedHeight = 720;
+    this->savedX = 100;
+    this->savedY = 100;
 
     if (!window) {
         std::cerr << "Can't create window" << std::endl;
