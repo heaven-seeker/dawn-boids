@@ -5,10 +5,12 @@
 
 namespace WGPUBoids {
 
+class WindowContext;
+
 class WebGPUContext {
    public:
-    bool init(GLFWwindow* window, int width, int height);
-    void resizeSwapchain(int width, int height);
+    bool init(WindowContext* wCtx);
+    void resizeSwapchain(WindowContext* wCtx);
 
    private:
     bool initInstance();

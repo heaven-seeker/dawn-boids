@@ -38,10 +38,12 @@ bool App::init(const char* title) {
 
     generateInitialBoids();
 
-    if (!gpuContext.init(window.getGLFWwindow(), width, height)) {
+    if (!gpuContext.init(&window)) {
         std::cerr << "Failed to initialize WebGPU Context\n";
         return false;
     }
+
+    gpuContext.resizeSwapchain(&window);
 
     wgpu::ShaderModule renderShader =
         ResourceManager::getInstance().loadShaderModule("boids.wgsl",
@@ -182,7 +184,7 @@ bool App::handleWindowEvents() {
     }
 
     if (window.hasResized()) {
-        gpuContext.resizeSwapchain(width, height);
+        gpuContext.resizeSwapchain(&window);
         window.setResized(false);
         render();
     }

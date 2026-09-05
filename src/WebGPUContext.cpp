@@ -1,21 +1,22 @@
 #include "WebGPUContext.hpp"
 
+#include <WindowContext.hpp>
 #include <iostream>
 
 namespace WGPUBoids {
 
-bool WebGPUContext::init(GLFWwindow* window, int width, int height) {
+bool WebGPUContext::init(WindowContext* wCtx) {
     if (!initInstance()) return false;
 
-    WGPUSurface c_surface = glfwGetWGPUSurface(instance.Get(), window);
+    WGPUSurface c_surface =
+        glfwGetWGPUSurface(instance.Get(), wCtx->getGLFWwindow());
     if (!setSurface(c_surface)) return false;
 
     if (!initAdapter()) return false;
     if (!initDevice()) return false;
     if (!initQueue()) return false;
 
-    setupSurfaceConfig(width, height);
-    resizeSwapchain(width, height);
+    setupSurfaceConfig(wCtx->getWidth(), wCtx->getHeight());
 
     return true;
 }
@@ -198,16 +199,16 @@ wgpu::TextureView WebGPUContext::getNextSurfaceViewData() {
     return surfaceTexture.texture.CreateView(&viewDescriptor);
 }
 
-void WebGPUContext::resizeSwapchain(int width, int height) {
-    if (width <= 0 || height <= 0) return;
+void WebGPUContext::resizeSwapchain(WindowContext* wCtx) {
+    if (wCtx->getWidth() <= 0 || wCtx->getHeight() <= 0) return;
 
     msaaTextureView = nullptr;
     depthTextureView = nullptr;
     msaaTexture = nullptr;
     depthTexture = nullptr;
 
-    surfaceConfig.width = static_cast<uint32_t>(width);
-    surfaceConfig.height = static_cast<uint32_t>(height);
+    surfaceConfig.width = static_cast<uint32_t>(wCtx->getWidth());
+    surfaceConfig.height = static_cast<uint32_t>(wCtx->getHeight());
     surface.Configure(&surfaceConfig);
 
     wgpu::TextureDescriptor msaaDesc{};
