@@ -346,7 +346,6 @@ void Renderer::initBuffers(const SimulationParams& params) {
     wgpu::BufferDescriptor bufferDesc;
     bufferDesc.label = "Boid uniforms buffer";
     bufferDesc.mappedAtCreation = false;
-    bufferDesc.nextInChain = nullptr;
     bufferDesc.size = sizeof(Uniforms);
     bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
     boidUniformBuffer = device.CreateBuffer(&bufferDesc);
