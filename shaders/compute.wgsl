@@ -180,7 +180,7 @@ fn build_grid(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let cell_y = u32(clamp((pos.y + params.cubeSize) / params.cellSize, 0.0, f32(params.gridHeight - 1u)));
     let cell_z = u32(clamp((pos.z + params.cubeSize) / params.cellSize, 0.0, f32(params.gridDepth - 1u)));
 
-    let cell_hash = (cell_z * params.gridHeight + cell_y) * params.gridWidth + cell_x; // номер ячейки в сетке в которую попадает боид
+    let cell_hash = (cell_z * params.gridHeight + cell_y) * params.gridWidth + cell_x;
 
     let local_index = atomicAdd(&gridCounters[cell_hash], 1u);
 
