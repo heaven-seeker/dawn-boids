@@ -69,6 +69,10 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDEV_MODE=OFF # On Linux, specif
 cmake --build build --config Release
 ```
 
-## A Little Note
+## Repository Branches & Optimizations
 
-> Currently, the algorithm runs via a brute-force approach with a complexity of $O(N^2)$. While the GPU handles this exceptionally well, a Spatial Hashing optimization will be added in the near future. This will significantly reduce the mathematical load and allow for rendering an even larger number of birds.
+This repository is divided into specific branches to demonstrate the different approaches of GPU compute optimization techniques:
+
+* **`main`**: Features the base implementation using a brute-force approach ($O(N^2)$). Every boid checks every other boid in the scene. The GPU handles this well for smaller flocks, but performance drops exponentially as numbers increase.
+* **`atomic_grid`**: Introduces a **Spatial Hashing** optimization using atomic counters. The 3D space is divided into a grid of cells, meaning boids only evaluate neighbors within their immediate vicinity. This drastically improves performance and allows for smooth simulation of up to 100,000+ boids.
+* **`sort_based`** *(Work in Progress)*: Will feature an even more advanced "Sort-Based Spatial Hashing" algorithm (eliminating atomic operations entirely via GPU Radix/Bitonic sorting) to achieve AAA-level particle simulation performance.
