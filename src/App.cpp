@@ -196,7 +196,7 @@ void App::generateInitialBoids() {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    float spawnRadius = uiLayer.getParams().cubeSize * 3.f;
+    float spawnRadius = uiLayer.getParams().cubeSize * 0.9f;
     std::uniform_real_distribution<float> dis(-spawnRadius, spawnRadius);
 
     boids.reserve(numBoids);

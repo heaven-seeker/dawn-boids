@@ -120,7 +120,7 @@ void Interface::buildUI() {
 
         if (ImGui::CollapsingHeader("Simulation Rules")) {
             uint32_t minBoids = 0;
-            uint32_t maxBoids = 100000;
+            uint32_t maxBoids = 350000;
             ImGui::SliderScalar("Active Boids", ImGuiDataType_U32,
                                 &params.activeBoidsCount, &minBoids, &maxBoids,
                                 "%u", ImGuiSliderFlags_AlwaysClamp);

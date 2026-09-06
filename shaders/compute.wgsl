@@ -34,7 +34,7 @@ struct BoidData {
 @group(0) @binding(3) var<storage, read_write> gridCounters: array<atomic<u32>>;
 @group(0) @binding(4) var<storage, read_write> gridCells: array<u32>;
 
-const MAX_BOIDS_PER_CELL: u32 = 32u;
+const MAX_BOIDS_PER_CELL: u32 = 64u;
 const MAX_CELLS: u32 = 512000u;
 
 @compute @workgroup_size(64)
@@ -56,9 +56,9 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
 
     let boidDir = normalize(currentBoid.velocity.xyz);
 
-    let cell_x = u32((currentBoid.position.x + params.cubeSize) / params.cellSize);
-    let cell_y = u32((currentBoid.position.y + params.cubeSize) / params.cellSize);
-    let cell_z = u32((currentBoid.position.z + params.cubeSize) / params.cellSize);
+    let cell_x = u32(clamp((currentBoid.position.x + params.cubeSize) / params.cellSize, 0.0, f32(params.gridWidth - 1u)));
+    let cell_y = u32(clamp((currentBoid.position.y + params.cubeSize) / params.cellSize, 0.0, f32(params.gridHeight - 1u)));
+    let cell_z = u32(clamp((currentBoid.position.z + params.cubeSize) / params.cellSize, 0.0, f32(params.gridDepth - 1u)));
 
     let start_x = max(0, i32(cell_x) - 1);
     let end_x   = min(i32(params.gridWidth) - 1, i32(cell_x) + 1);
@@ -75,7 +75,7 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
                 let cell_hash = (u32(i) * params.gridHeight + u32(j)) * params.gridWidth + u32(k);
                 let boidCounter: u32 = atomicLoad(&gridCounters[cell_hash]);
 
-                for (var c = 0u; c < boidCounter; c++) {
+                for (var c = 0u; c < min(MAX_BOIDS_PER_CELL, boidCounter); c++) {
                     let neighbour_index = gridCells[cell_hash * MAX_BOIDS_PER_CELL + c];
                     let neighbour = boidsIn[neighbour_index];
 
@@ -176,9 +176,9 @@ fn build_grid(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     let pos = boidsIn[boid_index].position;
 
-    let cell_x = u32((pos.x + params.cubeSize) / params.cellSize);
-    let cell_y = u32((pos.y + params.cubeSize) / params.cellSize);
-    let cell_z = u32((pos.z + params.cubeSize) / params.cellSize);
+    let cell_x = u32(clamp((pos.x + params.cubeSize) / params.cellSize, 0.0, f32(params.gridWidth - 1u)));
+    let cell_y = u32(clamp((pos.y + params.cubeSize) / params.cellSize, 0.0, f32(params.gridHeight - 1u)));
+    let cell_z = u32(clamp((pos.z + params.cubeSize) / params.cellSize, 0.0, f32(params.gridDepth - 1u)));
 
     let cell_hash = (cell_z * params.gridHeight + cell_y) * params.gridWidth + cell_x; // номер ячейки в сетке в которую попадает боид
 

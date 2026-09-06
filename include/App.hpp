@@ -43,7 +43,7 @@ class App {
     Interface uiLayer;
 
     std::vector<BoidData> boids;
-    int numBoids = 150000;
+    int numBoids = 300000;
 
     float deltaTime;
     C2Core::Time::Context* timeCtx = nullptr;

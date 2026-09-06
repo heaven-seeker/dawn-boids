@@ -31,7 +31,7 @@ struct SimulationParams {
     float strangerProtectedRange = 2.5f;
     float maxSpeed = 5.0f;
     float minSpeed = 2.0f;
-    float cubeSize = 4.5f;
+    float cubeSize = 10.0f;
     float cohesionFactor = 0.005f;
     float alignmentFactor = 0.05f;
     float separationFactor = 0.05f;
