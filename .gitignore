@@ -25,3 +25,5 @@ imgui.ini
 .DS_Store
 Thumbs.db
 release/*
+
+shaders/new.wgsl

@@ -83,6 +83,9 @@ class Renderer {
     wgpu::Buffer boidsBufferA;
     wgpu::Buffer boidsBufferB;
 
+    wgpu::Buffer gridCells;
+    wgpu::Buffer gridCounters;
+
     wgpu::BindGroup computeBindGroupA, computeBindGroupB;
 
     // Debug pipeline

@@ -1,5 +1,7 @@
 #include "Renderer.hpp"
 
+#include <iostream>
+
 #include "Camera.hpp"
 #include "CoreData.hpp"
 #include "Interface.hpp"
@@ -80,6 +82,7 @@ void Renderer::initBoidsData(const std::vector<BoidData>& boids) {
     if (!device) return;
 
     currentBoidsCount = static_cast<uint32_t>(boids.size());
+
     size_t bufferSize = currentBoidsCount * sizeof(BoidData);
 
     wgpu::BufferDescriptor boidDataBufferDesc = {};
@@ -95,7 +98,13 @@ void Renderer::initBoidsData(const std::vector<BoidData>& boids) {
     boidDataBufferDesc.label = "Boids Buffer B";
     boidsBufferB = device.CreateBuffer(&boidDataBufferDesc);
 
+    /*boidDataBufferDesc.label = "Grid counters buffer";
+    // gridCounters = device.CreateBuffer
+
+    boidDataBufferDesc.label = "Grid cells buffer";*/
+
     queue.WriteBuffer(boidsBufferA, 0, boids.data(), bufferSize);
+    queue.WriteBuffer(boidsBufferB, 0, boids.data(), bufferSize);
 }
 
 void Renderer::initCompute(wgpu::ShaderModule computeShader,
