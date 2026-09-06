@@ -114,40 +114,6 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         }
     }
 
-    /*
-    for (var j: u32 = 0; j < params.activeBoidsCount; j = j + 1u) {
-        if (j == index) { continue; }
-
-        let diff = boidsIn[j].position.xyz - currentBoid.position.xyz;
-        let dist = length(diff);
-        if (dist < 0.0001) { continue; }
-        
-        let toNeighborDir = diff / dist;
-
-        if (dot(boidDir, toNeighborDir) > params.visionRadius) {
-            if (dist <= params.visualRange) {
-                let isFriendly = (params.divideFlocks == 0u) || (boidsIn[j].position.w == flockId);
-                if (isFriendly) {
-                    numNeighbors += 1u;
-                    centerOfMass += boidsIn[j].position;
-                    avgVelocity += boidsIn[j].velocity;
-
-                    if (dist <= params.protectedRange) {
-                        let force = -diff;
-                        separationVector += vec4<f32>(force / (dist * dist), 0.0);
-                    }
-                } else {
-                    if (dist <= params.strangerProtectedRange) {
-                        let force = -diff * params.strangeForceFactor; // new param
-                        separationVector += vec4<f32>(force / (dist * dist), 0.0);
-                        
-                    }
-                }
-                
-            }
-        }
-    }*/
-
     if (numNeighbors > 0u) {
         let nFloat = f32(numNeighbors);
         centerOfMass /= nFloat;
