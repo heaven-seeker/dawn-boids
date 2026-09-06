@@ -94,7 +94,8 @@ void Interface::buildUI() {
         }
 
         if (ImGui::CollapsingHeader("Cube Params")) {
-            ImGui::SliderFloat("Cube Size", &params.cubeSize, 2.0f, 20.0f);
+            ImGui::SliderFloat("Cube Size", &params.cubeSize, 2.0f, 20.0f,
+                               "%.2f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Margin Cube", &params.margin, 0.1f, 2.f);
         }
 
@@ -122,7 +123,7 @@ void Interface::buildUI() {
             uint32_t maxBoids = 100000;
             ImGui::SliderScalar("Active Boids", ImGuiDataType_U32,
                                 &params.activeBoidsCount, &minBoids, &maxBoids,
-                                "%u");
+                                "%u", ImGuiSliderFlags_AlwaysClamp);
             ImGui::Checkbox("Divide into Flocks", &divideFlocks);
             params.divideFlocks = divideFlocks ? 1u : 0u;
 

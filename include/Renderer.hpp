@@ -74,6 +74,9 @@ class Renderer {
 
     // Compute pipeline
     wgpu::ComputePipeline computePipeline;
+    wgpu::ComputePipeline clearPipeline;
+    wgpu::ComputePipeline buildPipeline;
+
     wgpu::PipelineLayout computePipelineLayout;
     wgpu::BindGroupLayout bglCompute;
 
@@ -83,8 +86,8 @@ class Renderer {
     wgpu::Buffer boidsBufferA;
     wgpu::Buffer boidsBufferB;
 
-    wgpu::Buffer gridCells;
-    wgpu::Buffer gridCounters;
+    wgpu::Buffer gridCellsBuffer;
+    wgpu::Buffer gridCountersBuffer;
 
     wgpu::BindGroup computeBindGroupA, computeBindGroupB;
 

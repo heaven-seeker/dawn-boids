@@ -4,6 +4,7 @@
 
 #include "Camera.hpp"
 #include "CoreData.hpp"
+#include "Hardcode.hpp"
 #include "Interface.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -98,10 +99,13 @@ void Renderer::initBoidsData(const std::vector<BoidData>& boids) {
     boidDataBufferDesc.label = "Boids Buffer B";
     boidsBufferB = device.CreateBuffer(&boidDataBufferDesc);
 
-    /*boidDataBufferDesc.label = "Grid counters buffer";
-    // gridCounters = device.CreateBuffer
+    boidDataBufferDesc.label = "Grid counters buffer";
+    boidDataBufferDesc.size = MAX_CELLS * sizeof(uint32_t);
+    gridCountersBuffer = device.CreateBuffer(&boidDataBufferDesc);
 
-    boidDataBufferDesc.label = "Grid cells buffer";*/
+    boidDataBufferDesc.label = "Grid cells buffer";
+    boidDataBufferDesc.size = MAX_CELLS * MAX_BOIDS_PER_CELL * sizeof(uint32_t);
+    gridCellsBuffer = device.CreateBuffer(&boidDataBufferDesc);
 
     queue.WriteBuffer(boidsBufferA, 0, boids.data(), bufferSize);
     queue.WriteBuffer(boidsBufferB, 0, boids.data(), bufferSize);
@@ -109,7 +113,7 @@ void Renderer::initBoidsData(const std::vector<BoidData>& boids) {
 
 void Renderer::initCompute(wgpu::ShaderModule computeShader,
                            size_t boidsCount) {
-    std::vector<wgpu::BindGroupLayoutEntry> bglEntries(3);
+    std::vector<wgpu::BindGroupLayoutEntry> bglEntries(5);
 
     bglEntries[0].binding = 0;
     bglEntries[0].buffer.type = wgpu::BufferBindingType::Uniform;
@@ -123,6 +127,14 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader,
     bglEntries[2].buffer.type = wgpu::BufferBindingType::Storage;
     bglEntries[2].visibility = wgpu::ShaderStage::Compute;
 
+    bglEntries[3].binding = 3;
+    bglEntries[3].buffer.type = wgpu::BufferBindingType::Storage;
+    bglEntries[3].visibility = wgpu::ShaderStage::Compute;
+
+    bglEntries[4].binding = 4;
+    bglEntries[4].buffer.type = wgpu::BufferBindingType::Storage;
+    bglEntries[4].visibility = wgpu::ShaderStage::Compute;
+
     wgpu::BindGroupLayoutDescriptor bglDescriptor = {};
     bglDescriptor.entries = bglEntries.data();
     bglDescriptor.entryCount = static_cast<uint32_t>(bglEntries.size());
@@ -135,7 +147,7 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader,
     plDesc.nextInChain = nullptr;
     computePipelineLayout = device.CreatePipelineLayout(&plDesc);
 
-    std::vector<wgpu::BindGroupEntry> bindingsA(3);
+    std::vector<wgpu::BindGroupEntry> bindingsA(5);
 
     bindingsA[0].binding = 0;
     bindingsA[0].buffer = simulationParamsBuffer;
@@ -152,6 +164,16 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader,
     bindingsA[2].offset = 0;
     bindingsA[2].size = sizeof(BoidData) * boidsCount;
 
+    bindingsA[3].binding = 3;
+    bindingsA[3].buffer = gridCountersBuffer;
+    bindingsA[3].offset = 0;
+    bindingsA[3].size = gridCountersBuffer.GetSize();
+
+    bindingsA[4].binding = 4;
+    bindingsA[4].buffer = gridCellsBuffer;
+    bindingsA[4].offset = 0;
+    bindingsA[4].size = gridCellsBuffer.GetSize();
+
     wgpu::BindGroupDescriptor bgDescA = {};
     bgDescA.entries = bindingsA.data();
     bgDescA.entryCount = static_cast<uint32_t>(bindingsA.size());
@@ -159,7 +181,7 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader,
     bgDescA.nextInChain = nullptr;
     computeBindGroupA = device.CreateBindGroup(&bgDescA);
 
-    std::vector<wgpu::BindGroupEntry> bindingsB(3);
+    std::vector<wgpu::BindGroupEntry> bindingsB(5);
 
     bindingsB[0].binding = 0;
     bindingsB[0].buffer = simulationParamsBuffer;
@@ -176,6 +198,16 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader,
     bindingsB[2].offset = 0;
     bindingsB[2].size = sizeof(BoidData) * boidsCount;
 
+    bindingsB[3].binding = 3;
+    bindingsB[3].buffer = gridCountersBuffer;
+    bindingsB[3].offset = 0;
+    bindingsB[3].size = gridCountersBuffer.GetSize();
+
+    bindingsB[4].binding = 4;
+    bindingsB[4].buffer = gridCellsBuffer;
+    bindingsB[4].offset = 0;
+    bindingsB[4].size = gridCellsBuffer.GetSize();
+
     wgpu::BindGroupDescriptor bgDescB = {};
     bgDescB.entries = bindingsB.data();
     bgDescB.entryCount = static_cast<uint32_t>(bindingsB.size());
@@ -188,6 +220,12 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader,
     computeDesc.compute.entryPoint = "compute_main";
     computeDesc.layout = computePipelineLayout;
     computePipeline = device.CreateComputePipeline(&computeDesc);
+
+    computeDesc.compute.entryPoint = "build_grid";
+    buildPipeline = device.CreateComputePipeline(&computeDesc);
+
+    computeDesc.compute.entryPoint = "clear_grid";
+    clearPipeline = device.CreateComputePipeline(&computeDesc);
 }
 
 void Renderer::draw(WebGPUContext& gpu, const Camera& camera,
@@ -219,6 +257,14 @@ void Renderer::updateUniforms(WebGPUContext& gpu, const Camera& camera,
                               Interface& uiLayer) {
     auto params = uiLayer.getParams();
     params.visionRadius = glm::cos(glm::radians(params.visionRadius));
+    params.cellSize = params.visualRange;
+
+    float worldSize = params.cubeSize * 2.0f;
+    uint32_t cellsPerAxis =
+        static_cast<uint32_t>(std::ceil(worldSize / params.cellSize));
+    params.gridDepth = cellsPerAxis;
+    params.gridHeight = cellsPerAxis;
+    params.gridWidth = cellsPerAxis;
 
     Uniforms boidUniforms, cubeUniforms;
     boidUniforms.time = glfwGetTime();
@@ -253,16 +299,23 @@ void Renderer::runComputePass(wgpu::CommandEncoder& encoder,
     wgpu::ComputePassEncoder computePass =
         encoder.BeginComputePass(&computePassDescriptor);
 
-    computePass.SetPipeline(computePipeline);
-
     if (frameCount % 2 == 0) {
         computePass.SetBindGroup(0, computeBindGroupA, 0, nullptr);
     } else {
         computePass.SetBindGroup(0, computeBindGroupB, 0, nullptr);
     }
 
-    uint32_t workgroupCount = (params.activeBoidsCount + 63) / 64;
-    computePass.DispatchWorkgroups(workgroupCount, 1, 1);
+    uint32_t workgroupCount = MAX_CELLS / 64;
+    computePass.SetPipeline(clearPipeline);
+    computePass.DispatchWorkgroups(workgroupCount);
+
+    workgroupCount = (params.activeBoidsCount + 63) / 64;
+
+    computePass.SetPipeline(buildPipeline);
+    computePass.DispatchWorkgroups(workgroupCount);
+
+    computePass.SetPipeline(computePipeline);
+    computePass.DispatchWorkgroups(workgroupCount);
     computePass.End();
 }
 
