@@ -18,6 +18,7 @@ build/
 *.out
 .vs/
 imgui.ini
+_deps/
 
 *.spv
 *.json

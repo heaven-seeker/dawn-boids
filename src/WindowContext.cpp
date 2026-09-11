@@ -24,6 +24,7 @@ bool WindowContext::init(int width, int height, const char* title) {
         return false;
     }
 
+#ifdef _WIN32  // Set app icon on windows
     GLFWimage images[1];
     images[0].pixels = stbi_load("assets/app_icon.png", &images[0].width,
                                  &images[0].height, 0, 4);
@@ -31,6 +32,7 @@ bool WindowContext::init(int width, int height, const char* title) {
         glfwSetWindowIcon(window, 1, images);
         stbi_image_free(images[0].pixels);
     }
+#endif
 
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int, int) {
