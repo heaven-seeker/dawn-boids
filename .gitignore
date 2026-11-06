@@ -28,3 +28,7 @@ Thumbs.db
 release/*
 
 shaders/new.wgsl
+tests/
+tools/
+temp/
+temp docs/

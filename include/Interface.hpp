@@ -23,20 +23,26 @@ class Interface {
     void draw(wgpu::RenderPassEncoder renderPass);
 
    private:
-    unsigned int fontSize = 16.f;
-    float currentScale = 2.1f;
+    void buildControlPanel();
+    void buildSceneTab();
+    void buildBehaviorTab();
+    void buildViewTab();
+    void buildNavigationHint();
+
+    float currentScale = 1.0f;
+    float fontScale = 1.0f;
     SimulationParams params;
     int targetFPS = 60;
+    int pendingTargetFPS = 60;
     bool showVelocity = false;
     bool showCoM = false;
     bool divideFlocks = false;
 
     bool requestFullscreenToggle = false;
-    bool isFullscreen = true;
 
     GLFWwindow* glfwWindow = nullptr;
     Camera* camera = nullptr;
-    bool showControlPanel = false;
+    bool showControlPanel = true;
 
    public:
     const SimulationParams& getParams() const { return params; }

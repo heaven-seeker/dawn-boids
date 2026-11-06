@@ -27,13 +27,13 @@ class WindowContext {
     float getAndResetScrollDelta();
 
    private:
-    GLFWwindow* window;
-    int height, width;
+    GLFWwindow* window = nullptr;
+    int height = 0, width = 0;
     std::string name;
     bool framebufferResized = false;
     float scrollDelta = 0.f;
 
-    bool isFullscreen = false;
+    bool savedMaximized = false;
     int savedX = 0, savedY = 0, savedWidth = 0, savedHeight = 0;
 
    public:
